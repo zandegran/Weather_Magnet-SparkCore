@@ -1,0 +1,18 @@
+{
+"event": "weather_hook",
+"url": "http://api.openweathermap.org/data/2.5/weather",
+"requestType": "POST",
+"headers": null,
+"query": {
+	"q": "Stockholm,SE",
+	"mode": "json",
+	"units": "metric",
+	"appid": "63e0a2b2c2bbd11a6d10fbb24832ffb2"
+	},
+"responseTemplate": "{{#weather}}{{id}}{{/weather}}~{{main.temp}}",
+"json": null,
+"auth": null,
+"noDefaults": true,
+"devideid": null,
+"mydevices": true
+}
