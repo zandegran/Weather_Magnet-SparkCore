@@ -7,7 +7,7 @@
 	"q": "Stockholm,SE",
 	"mode": "json",
 	"units": "metric",
-	"appid": "63e0a2b2c2bbd11a6d10fbb24832ffb2"
+	"appid": "<App-ID>"
 	},
 "responseTemplate": "{{#weather}}{{id}}{{/weather}}~{{main.temp}}",
 "json": null,

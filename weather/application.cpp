@@ -4,6 +4,23 @@
 #include <math.h>
 int led = D7; // This one is the built-in tiny one to the right of the USB jack
 
+//pins for decimal point and each segment
+//A, B, C, D, E, F, G, dp
+const int numberofSegments=8;
+
+const int segmentPins[]= { A0, D4, D2, D1, D0, A1, D3, A2}; 
+
+const int numberofDigits=4;
+
+const int digitPins[numberofDigits] = { A3, A4, D5, D6}; //digits 1, 2, 3, 4
+
+int outputSegmentValues[] = {0b00000010, 0b00000010, 0b00000010, 0b00000010}; // Initial values for Digits
+
+// delay in milliseconds between Weatheer requests 
+const long int intervalAfterFirstUpdate = 10 * 60 * 1000;   // Set interval here 
+
+long int interval = 20 * 1000;      // Actual value changes after first update
+
 //ABCDEFG,dp
 const int numeral[10]= {
     0b11111100, //0
@@ -30,10 +47,58 @@ const int statusCode[10]= {
     0b10011110, //E
 };
 
+void selectDigit(int segment) {
+    for (int i = 0; i < numberofSegments; i++) {
+        if (segment == i) {
+            digitalWrite(digitPins[i], HIGH);
+        }
+        else {
+            digitalWrite(digitPins[i], LOW);
+        }
+    }
+}
+
+void clearDigit(int segment) {
+    int segmentCounter = numberofSegments;
+    while (segmentCounter) {
+        digitalWrite(segmentPins[--segmentCounter],HIGH);
+    }
+}
+
+void outputDigit(int segment, int value) {
+    delay(segment == 0? 0: 4);              // Loop is taking some time causing visible brightness difference. Hence, Compensation.
+    clearDigit(segment);                    // Clear the digit before moving. Overwriting is causing fade effect.
+    selectDigit(segment);
+    int segmentCounter = numberofSegments;
+    if (value > 0)                          // only if there is something to turn on.
+    {
+        while (segmentCounter) {
+            digitalWrite(segmentPins[--segmentCounter], (int)(value & 1) ? LOW: HIGH);
+            value >>= 1;
+        }
+    }
+}
+
+void displayWeather() {
+   for (int i = 0; i < numberofDigits; i++) {
+         outputDigit(i, outputSegmentValues[i]);
+   }
+}
+
 void displayWeather(bool minus, int temp, int status) {
-  Serial.println(minus);
-  Serial.println(temp);
-  Serial.println(status);
+    Serial.println(minus);
+    Serial.println(temp);
+    Serial.println(status);
+    outputSegmentValues[0] = minus? 0b00000010: 0b00000000; // Set G segment for minus
+    int digitCounter = temp > 9? 2: 1;                      //To remove preceeding Zero
+    outputSegmentValues[2] = 0b00000000;                    // To clear the 2nd digit in case of single digit Weather
+    while (digitCounter){
+      outputSegmentValues[digitCounter] = numeral[temp%10];
+      temp /= 10;
+      digitCounter--;
+    } 
+    outputSegmentValues[3] = statusCode[status];
+    displayWeather();
 }
 
 void processValues(const char *temperature, const char *id) {
@@ -123,6 +188,5 @@ void loop() {
   digitalWrite(led, HIGH);
   // Trigger the webhook
   Particle.publish("weather_hook", data, PRIVATE);
-  // Wait 60 seconds
-  delay(60000);
+  delay(interval);
 }
