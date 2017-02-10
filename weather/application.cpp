@@ -1,6 +1,5 @@
-////http://api.openweathermap.org/data/2.5/weather?q=stockholm,SE&units=metric&appid=<app-id here>
-////"particle webhook create webhook.json " Create the webhook
 #include "application.h"
+#include <elapsedMillis.h>
 #include <math.h>
 int led = D7; // This one is the built-in tiny one to the right of the USB jack
 
@@ -20,6 +19,8 @@ int outputSegmentValues[] = {0b00000010, 0b00000010, 0b00000010, 0b00000010}; //
 const long int intervalAfterFirstUpdate = 10 * 60 * 1000;   // Set interval here 
 
 long int interval = 20 * 1000;      // Actual value changes after first update
+// Elapsed time since update
+elapsedMillis timeElapsed;
 
 //ABCDEFG,dp
 const int numeral[10]= {
@@ -84,21 +85,19 @@ void displayWeather() {
          outputDigit(i, outputSegmentValues[i]);
    }
 }
-
-void displayWeather(bool minus, int temp, int status) {
+void setSegmentValues(bool minus, int temp, int status) {
     Serial.println(minus);
     Serial.println(temp);
     Serial.println(status);
     outputSegmentValues[0] = minus? 0b00000010: 0b00000000; // Set G segment for minus
     int digitCounter = temp > 9? 2: 1;                      //To remove preceeding Zero
     outputSegmentValues[2] = 0b00000000;                    // To clear the 2nd digit in case of single digit Weather
-    while (digitCounter){
+    do {
       outputSegmentValues[digitCounter] = numeral[temp%10];
       temp /= 10;
       digitCounter--;
-    } 
+    } while (temp);
     outputSegmentValues[3] = statusCode[status];
-    displayWeather();
 }
 
 void processValues(const char *temperature, const char *id) {
@@ -136,57 +135,78 @@ void processValues(const char *temperature, const char *id) {
     {
         status = 9;   //Extreme E
     }
-
-  displayWeather(intemperature<0, intemperature<0?intemperature*-1:intemperature, status);
+    
+    setSegmentValues(intemperature < 0, intemperature < 0 ? intemperature * -1: intemperature, status);
 }
 
 
 void processWeather(const char *event, const char *data) {
-Serial.println("Handling Weather: ");
-// Handle the webhook response
-//Particle.publish("Handling weather",data);
-int stringPos = strlen(data);
-//Serial.println(stringPos);
-char w_temp[7] = {""};
-char w_id[4] = {""};
-int itemCounter = 0;
-int tempStringLoc=0;
-memset(&w_temp,0,7);
-memset(&w_id,0,4);
-for (int i=0; i<stringPos; i++){
-    if(data[i]=='~'){
-          itemCounter++;
-          tempStringLoc=0;
-    }else
-    {
-        switch(itemCounter){
-        case 0:
-          w_id[tempStringLoc++] = data[i];
-          break;
-        case 1:
-          w_temp[tempStringLoc++] = data[i];
-          break;
+    Serial.println("Handling Weather: ");
+    // Handle the webhook response
+    //Particle.publish("Handling weather",data);
+    int stringPos = strlen(data);
+    //Serial.println(stringPos);
+    char w_temp[7] = {""};
+    char w_id[4] = {""};
+    int itemCounter = 0;
+    int tempStringLoc = 0;
+    memset(&w_temp,0,7);
+    memset(&w_id,0,4);
+    for (int i = 0; i < stringPos; i++){
+        if(data[i] == '~'){
+              itemCounter++;
+              tempStringLoc = 0;
+        }else
+        {
+            switch(itemCounter){
+            case 0:
+              w_id[tempStringLoc++] = data[i];
+              break;
+            case 1:
+              w_temp[tempStringLoc++] = data[i];
+              break;
+            }
+        }
+    }
+    processValues(w_temp,w_id);
+    digitalWrite(led, LOW);
+    if (interval < intervalAfterFirstUpdate) {          // Changes the actual interval value
+        interval = intervalAfterFirstUpdate;   
+        // removing this for block (or moving this if block to the top of this function)
+        // is causing unwanted segments to turn on. I don't know why.
+        for (int i = 0; i < numberofDigits; i++) {
+            Serial.println();
         }
     }
 }
-processValues(w_temp,w_id);
-digitalWrite(led, LOW);
-
+void setupPins() {
+    pinMode(led, OUTPUT);
+    for (int i = 0; i < numberofDigits; i++) {
+        pinMode( digitPins[i], OUTPUT);
+    }
+    for (int i = 0; i < numberofSegments; i++) {
+        pinMode( segmentPins[i], OUTPUT);
+    }
 }
+
 void setup() {
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-  Serial.print("Started: ");
-  // Subscribe to the webhook response event
-  Particle.subscribe("hook-response/weather_hook", processWeather , MY_DEVICES);
+    setupPins();
+    Serial.begin(9600);
+    Serial.print("Started: ");
+    // Subscribe to the webhook response event
+    Particle.subscribe("hook-response/weather_hook", processWeather , MY_DEVICES);
 }
 
 
 void loop() {
-  // Get some data
-  String data = String(10);
-  digitalWrite(led, HIGH);
-  // Trigger the webhook
-  Particle.publish("weather_hook", data, PRIVATE);
-  delay(interval);
+    if (timeElapsed > interval) 
+  { 
+      // Get some data
+        String data = String(10);
+        digitalWrite(led, HIGH);
+        // Trigger the webhook
+        Particle.publish("weather_hook", data, PRIVATE);
+        timeElapsed = 0;       // reset the counter to 0 so the counting starts over...
+  }
+    displayWeather();
 }

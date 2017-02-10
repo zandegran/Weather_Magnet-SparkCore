@@ -1,12 +1,12 @@
 Weather Magnet Spark-Core
 =========================
-Weather magnet using Particle(spark) Core
+WiFi connected Weather magnet using Particle(spark) Core
 and 4 digit 7 Segment display
 
 Building Tutorial: coming Soon
+
+![Digit Config](https://github.com/zandegran/Weather_Magnet-SparkCore/raw/master/blob/magnet.JPG)<br/>
 #### Digit Configuration
-![Digit Config](http://www.learningaboutelectronics.com/images/4-digit-7-segment-LED-display.png)<br/>
-Image source: [www.learningaboutelectronics.com](http://www.learningaboutelectronics.com/Articles/4-digit-7-segment-LED-circuit-with-an-arduino.php) <br/>
 1, 2 & 3 	- 	Shows the temperature<br/>
 4		- 	Shows the weather status (see status codes)<br/>
 #### Status Codes
@@ -23,20 +23,27 @@ Image source: [www.learningaboutelectronics.com](http://www.learningaboutelectro
 
 
 #### Configuration
-* Create a free account in openweathermap.org.
+* Create a free account in openweathermap.org and create appid
 * Add appid in the weather.json.
 * Change the City name to yours.
-* Change units to imperial, if you want temperature in farenheit.
+* Change units to `imperial`, if you want temperature in farenheit.
 * Check the api call using this URL (Change attributes according to the config)
 `http://api.openweathermap.org/data/2.5/weather?q=stockholm,SE&units=metric&appid=<App-ID>`
 
 ##### Creating Webhook
-Once configuration is done checked, Use `particle webhook create webhook.json` to create the webhook.
+Once configuration is done and checked, Use `particle webhook create webhook.json` command to create the webhook.
 
-#### How to Build
+#### How to Build Firmware
 ##### Using Online IDE
 * Copy the content of `weather.app` in a new project
-* Add the library `elapsedMillis` from libraries
+* Add the library `elapsedMillis` from builtin libraries
 * Verify and Flash 
 
-##### Manual
+##### Manual build for core
+* Get base firmware from `https://github.com/spark/firmware`
+* Copy the folder weather to `user/applications`
+* cd to the `main` folder in base directory
+* Build using `make clean all PLATFORM=core PARTICLE_DEVELOP=1 APP=weather`
+
+##### Schematics Help
+[www.learningaboutelectronics.com](http://www.learningaboutelectronics.com/Articles/4-digit-7-segment-LED-circuit-with-an-arduino.php)
