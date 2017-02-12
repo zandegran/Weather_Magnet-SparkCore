@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW X7 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="333mm" height="333mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 33300 33300"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#373435;stroke-width:7.62}
+    .fil1 {fill:none}
+    .fil0 {fill:#373435}
+   ]]>
+  </style>
+ </defs>
+ <g id="Back">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <circle class="fil0" cx="5000" cy="6907" r="1050"/>
+  <g id="_2131307438416">
+   <rect class="fil1 str0" x="200" y="4907" width="9600" height="4000" rx="396" ry="600"/>
+   <circle class="fil1 str0" cx="700" cy="5407" r="146"/>
+   <circle class="fil1 str0" cx="700" cy="8407" r="146"/>
+   <circle class="fil1 str0" cx="9300" cy="5407" r="146"/>
+   <circle class="fil1 str0" cx="9300" cy="8407" r="146"/>
+  </g>
+  <circle class="fil1 str0" cx="5000" cy="6907" r="146"/>
+ </g>
+ <g id="Front">
+  <metadata id="CorelCorpID_1Corel-Layer"/>
+  <circle class="fil1 str0" cx="8900" cy="2800" r="122"/>
+  <rect class="fil1 str0" x="2500" y="1800" width="5000" height="2000"/>
+  <g id="_2131307435472">
+   <rect class="fil1 str0" x="200" y="800" width="9600" height="4000" rx="396" ry="600"/>
+   <circle class="fil1 str0" cx="700" cy="1300" r="146"/>
+   <circle class="fil1 str0" cx="700" cy="4300" r="146"/>
+   <circle class="fil1 str0" cx="9300" cy="1300" r="146"/>
+   <circle class="fil1 str0" cx="9300" cy="4300" r="146"/>
+  </g>
+ </g>
+</svg>
