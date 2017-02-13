@@ -4,9 +4,9 @@
 int led = D7; // This one is the built-in tiny one to the right of the USB jack
 
 //pins for decimal point and each segment
-//A, B, C, D, E, F, G, dp
 const int numberofSegments=8;
 
+//A, B, C, D, E, F, G, dp
 const int segmentPins[]= { A0, D4, D2, D1, D0, A1, D3, A2}; 
 
 const int numberofDigits=4;
@@ -15,7 +15,7 @@ const int digitPins[numberofDigits] = { A3, A4, D5, D6}; //digits 1, 2, 3, 4
 
 int outputSegmentValues[] = {0b00000010, 0b00000010, 0b00000010, 0b00000010}; // Initial values for Digits
 
-// delay in milliseconds between Weatheer requests 
+// delay in milliseconds between Weather requests (10 minutes)
 const long int intervalAfterFirstUpdate = 10 * 60 * 1000;   // Set interval here 
 
 long int interval = 20 * 1000;      // Actual value changes after first update
@@ -38,9 +38,9 @@ const int numeral[10]= {
 const int statusCode[10]= {
     0b01111100, //U
     0b00011110, //t
-    0b10111100, //G
-    0b00011010, //c
     0b10011100, //C
+    0b00111010, //o
+    0b11111100, //O
     0b01111010, //d
     0b00001010, //r
     0b10110110, //S
@@ -74,14 +74,14 @@ void outputDigit(int segment, int value) {
     if (value > 0)                          // only if there is something to turn on.
     {
         while (segmentCounter) {
-            digitalWrite(segmentPins[--segmentCounter], (int)(value & 1) ? LOW: HIGH);
-            value >>= 1;
+            digitalWrite(segmentPins[--segmentCounter], (int)(value & 1) ? LOW: HIGH);  // Display LSB
+            value >>= 1;                                                                // Set LSB
         }
     }
 }
 
 void displayWeather() {
-   for (int i = 0; i < numberofDigits; i++) {
+   for (int i = 0; i < numberofDigits; i++) {                               // Display Each Segment
          outputDigit(i, outputSegmentValues[i]);
    }
 }
@@ -89,10 +89,10 @@ void setSegmentValues(bool minus, int temp, int status) {
     Serial.println(minus);
     Serial.println(temp);
     Serial.println(status);
-    outputSegmentValues[0] = minus? 0b00000010: 0b00000000; // Set G segment for minus
-    int digitCounter = temp > 9? 2: 1;                      //To remove preceeding Zero
-    outputSegmentValues[2] = 0b00000000;                    // To clear the 2nd digit in case of single digit Weather
-    do {
+    outputSegmentValues[0] = minus? 0b00000010: 0b00000000;                 // Set G segment for minus
+    int digitCounter = (temp < 10 )? 1: 2;         // To format
+    outputSegmentValues[2] = 0b00000000;                                    // To clear the 2nd digit in case of single digit Weather
+    do {                                                                    // Run once to display 0
       outputSegmentValues[digitCounter] = numeral[temp%10];
       temp /= 10;
       digitCounter--;
@@ -106,19 +106,19 @@ void processValues(const char *temperature, const char *id) {
     //double ftemperature = strtod(temperature,NULL);
     int intemperature =(int)(roundf(strtod(temperature,NULL))); // Round the temperature
     int intid = atoi(id);
-    int status=0;  //unknown 
+    int status=0;  // U unknown 
     if((int)(intid/100) == 2)
     {
         status = 1; //thunders t
     }else if (intid == 800)
     {
-        status = 2;  //Clear Sky/Good G 
+        status = 2;  //Clear Skyz
     }else if (intid == 801 || intid == 802)
     {
-        status = 3;  //Light Clouds c
+        status = 3;  //Partly Overcast o
     }else if (intid == 804 || intid == 803)
     {
-        status = 4;   //Clouds C
+        status = 4;   //Overcast O
     }else if ((int)(intid / 100)  == 3)
     {
         status = 5;   //Drizzle d
@@ -143,9 +143,7 @@ void processValues(const char *temperature, const char *id) {
 void processWeather(const char *event, const char *data) {
     Serial.println("Handling Weather: ");
     // Handle the webhook response
-    //Particle.publish("Handling weather",data);
     int stringPos = strlen(data);
-    //Serial.println(stringPos);
     char w_temp[7] = {""};
     char w_id[4] = {""};
     int itemCounter = 0;
@@ -154,22 +152,22 @@ void processWeather(const char *event, const char *data) {
     memset(&w_id,0,4);
     for (int i = 0; i < stringPos; i++){
         if(data[i] == '~'){
-              itemCounter++;
-              tempStringLoc = 0;
+                    itemCounter++;
+                    tempStringLoc = 0;
         }else
         {
             switch(itemCounter){
-            case 0:
-              w_id[tempStringLoc++] = data[i];
-              break;
-            case 1:
-              w_temp[tempStringLoc++] = data[i];
-              break;
-            }
+                    case 0:
+                        w_id[tempStringLoc++] = data[i];
+                        break;
+                    case 1:
+                        w_temp[tempStringLoc++] = data[i];
+                        break;
+                    }
         }
     }
     processValues(w_temp,w_id);
-    digitalWrite(led, LOW);
+    digitalWrite(led, LOW);                             // Turn off when the response is received
     if (interval < intervalAfterFirstUpdate) {          // Changes the actual interval value
         interval = intervalAfterFirstUpdate;   
         // removing this for block (or moving this if block to the top of this function)
@@ -200,13 +198,13 @@ void setup() {
 
 void loop() {
     if (timeElapsed > interval) 
-  { 
-      // Get some data
+    {   
+        // Get some data
         String data = String(10);
-        digitalWrite(led, HIGH);
+        digitalWrite(led, HIGH);    // Turn on when the request is sent
         // Trigger the webhook
         Particle.publish("weather_hook", data, PRIVATE);
-        timeElapsed = 0;       // reset the counter to 0 so the counting starts over...
-  }
+        timeElapsed = 0;            // reset the counter to 0 so the counting starts over...
+    }
     displayWeather();
 }

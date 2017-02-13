@@ -12,9 +12,9 @@ Building Tutorial: coming Soon
 #### Status Codes
 * `U`	-	Unknown
 * `t`	-	Thunders
-* `G`	-	Good or Clear sky
-* `c`	-	Partly 
-* `C`	-	Cloudy
+* `C`	-	Clear sky
+* `o`	-	Partly Overcast
+* `O`	-	Overcast
 * `d`	-	Drizzle
 * `r`	-	Rain
 * `S`	-	Snow
