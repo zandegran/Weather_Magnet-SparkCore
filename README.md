@@ -3,7 +3,8 @@ Weather Magnet Spark-Core
 WiFi connected Weather magnet using Particle(spark) Core
 and 4 digit 7 Segment display
 
-Building Tutorial: coming Soon
+####Building Tutorial 
+coming Soon
 
 ![Digit Config](https://github.com/zandegran/Weather_Magnet-SparkCore/raw/master/blob/magnet.JPG)<br/>
 #### Digit Configuration
@@ -45,5 +46,7 @@ Once configuration is done and checked, Use `particle webhook create webhook.jso
 * cd to the `main` folder in base directory
 * Build using `make clean all PLATFORM=core PARTICLE_DEVELOP=1 APP=weather`
 
+##### Schematics 
+![Schematics](https://github.com/zandegran/Weather_Magnet-SparkCore/raw/master/schematics/Schmatics.jpg)<br/>
 ##### Schematics Help
 [www.learningaboutelectronics.com](http://www.learningaboutelectronics.com/Articles/4-digit-7-segment-LED-circuit-with-an-arduino.php)
