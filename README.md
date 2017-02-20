@@ -1,10 +1,11 @@
+![License](https://img.shields.io/dub/l/vibe-d.svg)
 Weather Magnet Spark-Core
 =========================
 WiFi connected Weather magnet using Particle(spark) Core
 and 4 digit 7 Segment display
 
 ####Building Tutorial 
-coming Soon
+Coming Soon
 
 ![Digit Config](https://github.com/zandegran/Weather_Magnet-SparkCore/raw/master/blob/magnet.JPG)<br/>
 #### Digit Configuration
