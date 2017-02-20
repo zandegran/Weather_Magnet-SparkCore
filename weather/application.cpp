@@ -16,9 +16,9 @@ const int digitPins[numberofDigits] = { A3, A4, D5, D6}; //digits 1, 2, 3, 4
 int outputSegmentValues[] = {0b00000010, 0b00000010, 0b00000010, 0b00000010}; // Initial values for Digits
 
 // delay in milliseconds between Weather requests (10 minutes)
-const long int intervalAfterFirstUpdate = 10 * 60 * 1000;   // Set interval here 
+const unsigned long intervalAfterFirstUpdate = 10 * 60 * 1000;   // Set interval here 
 
-long int interval = 20 * 1000;      // Actual value changes after first update
+unsigned long interval = 20 * 1000;      // Actual value changes after first update
 // Elapsed time since update
 elapsedMillis timeElapsed;
 
@@ -90,7 +90,7 @@ void setSegmentValues(bool minus, int temp, int status) {
     Serial.println(temp);
     Serial.println(status);
     outputSegmentValues[0] = minus? 0b00000010: 0b00000000;                 // Set G segment for minus
-    int digitCounter = (temp < 10 )? 1: 2;         // To format
+    int digitCounter = (temp < 10 )? 1: 2;                                   // To format  || (temp < 100 && !minus)
     outputSegmentValues[2] = 0b00000000;                                    // To clear the 2nd digit in case of single digit Weather
     do {                                                                    // Run once to display 0
       outputSegmentValues[digitCounter] = numeral[temp%10];
@@ -101,9 +101,9 @@ void setSegmentValues(bool minus, int temp, int status) {
 }
 
 void processValues(const char *temperature, const char *id) {
+    //Sample:  temperature: -4.81  id: 800
     Serial.println(temperature);
     Serial.println(id);
-    //double ftemperature = strtod(temperature,NULL);
     int intemperature =(int)(roundf(strtod(temperature,NULL))); // Round the temperature
     int intid = atoi(id);
     int status=0;  // U unknown 
@@ -112,7 +112,7 @@ void processValues(const char *temperature, const char *id) {
         status = 1; //thunders t
     }else if (intid == 800)
     {
-        status = 2;  //Clear Skyz
+        status = 2;  //Clear Sky C
     }else if (intid == 801 || intid == 802)
     {
         status = 3;  //Partly Overcast o
@@ -141,6 +141,7 @@ void processValues(const char *temperature, const char *id) {
 
 
 void processWeather(const char *event, const char *data) {
+    //Sample data: 800~-4.81
     Serial.println("Handling Weather: ");
     // Handle the webhook response
     int stringPos = strlen(data);
@@ -148,8 +149,8 @@ void processWeather(const char *event, const char *data) {
     char w_id[4] = {""};
     int itemCounter = 0;
     int tempStringLoc = 0;
-    memset(&w_temp,0,7);
-    memset(&w_id,0,4);
+    memset(w_temp, 0, sizeof(w_temp));
+    memset(w_id, 0, sizeof(w_id));
     for (int i = 0; i < stringPos; i++){
         if(data[i] == '~'){
                     itemCounter++;
