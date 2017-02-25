@@ -1,6 +1,15 @@
 #include "application.h"
 #include <elapsedMillis.h>
 #include <math.h>
+//#define DEBUGME
+#ifdef DEBUGME
+    #define DEBUGp(message)     Serial.print(message)
+    #define DEBUGpln(message)   Serial.println(message)
+#else
+    #define DEBUGp(message)
+    #define DEBUGpln(message)
+#endif
+
 int led = D7; // This one is the built-in tiny one to the right of the USB jack
 
 //pins for decimal point and each segment
@@ -86,11 +95,11 @@ void displayWeather() {
    }
 }
 void setSegmentValues(bool minus, int temp, int status) {
-    Serial.println(minus);
-    Serial.println(temp);
-    Serial.println(status);
+    DEBUGpln(minus);
+    DEBUGpln(temp);
+    DEBUGpln(status);
     outputSegmentValues[0] = minus? 0b00000010: 0b00000000;                 // Set G segment for minus
-    int digitCounter = (temp < 10 )? 1: 2;                                   // To format  || (temp < 100 && !minus)
+    int digitCounter = (temp < 10 || (temp < 100 && !minus))? 1: 2;                                  // To format  || (temp < 100 && !minus)
     outputSegmentValues[2] = 0b00000000;                                    // To clear the 2nd digit in case of single digit Weather
     do {                                                                    // Run once to display 0
       outputSegmentValues[digitCounter] = numeral[temp%10];
@@ -102,8 +111,8 @@ void setSegmentValues(bool minus, int temp, int status) {
 
 void processValues(const char *temperature, const char *id) {
     //Sample:  temperature: -4.81  id: 800
-    Serial.println(temperature);
-    Serial.println(id);
+    DEBUGpln(temperature);
+    DEBUGpln(id);
     int intemperature =(int)(roundf(strtod(temperature,NULL))); // Round the temperature
     int intid = atoi(id);
     int status=0;  // U unknown 
@@ -142,10 +151,10 @@ void processValues(const char *temperature, const char *id) {
 
 void processWeather(const char *event, const char *data) {
     //Sample data: 800~-4.81
-    Serial.println("Handling Weather: ");
+    DEBUGpln("Handling Weather: ");
     // Handle the webhook response
     int stringPos = strlen(data);
-    char w_temp[7] = {""};
+    char w_temp[7] = {""};  
     char w_id[4] = {""};
     int itemCounter = 0;
     int tempStringLoc = 0;
@@ -158,13 +167,15 @@ void processWeather(const char *event, const char *data) {
         }else
         {
             switch(itemCounter){
-                    case 0:
+                case 0:
+                    if(tempStringLoc < sizeof(w_id)-1) {      //Takes 3 digits: Sometimes there's error in the data received
                         w_id[tempStringLoc++] = data[i];
-                        break;
-                    case 1:
-                        w_temp[tempStringLoc++] = data[i];
-                        break;
                     }
+                    break;
+                case 1:
+                    w_temp[tempStringLoc++] = data[i];
+                    break;
+            }
         }
     }
     processValues(w_temp,w_id);
@@ -177,6 +188,7 @@ void processWeather(const char *event, const char *data) {
             Serial.println();
         }
     }
+    
 }
 void setupPins() {
     pinMode(led, OUTPUT);
@@ -190,8 +202,10 @@ void setupPins() {
 
 void setup() {
     setupPins();
-    Serial.begin(9600);
-    Serial.print("Started: ");
+    #if defined (DEBUGME)
+        Serial.begin(115200);
+    #endif
+    DEBUGp("Started: ");
     // Subscribe to the webhook response event
     Particle.subscribe("hook-response/weather_hook", processWeather , MY_DEVICES);
 }
