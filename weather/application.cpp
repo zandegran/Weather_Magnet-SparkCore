@@ -154,7 +154,7 @@ void processWeather(const char *event, const char *data) {
     DEBUGpln("Handling Weather: ");
     // Handle the webhook response
     int stringPos = strlen(data);
-    char w_temp[7] = {""};  
+    char w_temp[8] = {""};  // can accomodate: -100.46
     char w_id[4] = {""};
     int itemCounter = 0;
     int tempStringLoc = 0;
